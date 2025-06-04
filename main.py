@@ -1,12 +1,12 @@
 
-import pygame
 import os
 import random
 import sys
 import random
 import json
+import pygame 
 
-# Инициализация Pygame
+
 pygame.init()
 
 BLACK = (0,0,0)
@@ -14,7 +14,7 @@ BLACK = (0,0,0)
 font1 = pygame.font.SysFont(None, 30)
 font2 = pygame.font.SysFont(None, 60)
 
-# Настройки окна
+
 WIDTH = 1280
 HEIGHT = 720
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -23,8 +23,8 @@ background = pygame.transform.scale(pygame.image.load('assets/background.png'),(
 
 
 
-# ФПС
-FPS = 120
+
+FPS = 60
 clock = pygame.time.Clock()
 
 class Character:
@@ -119,7 +119,7 @@ class Character:
     
     def load_animations(self):
         animation_data = {
-            "idle": {"folder": "assets/heroes/"+self.name+"/idle", "frames": 30},
+            "idle": {"folder": "assets/heroes/"+self.name+"/idle", "frames": 13},
             "attack1": {"folder": "assets/heroes/"+self.name+"/attack1", "frames": 3},
             "attack2": {"folder": "assets/heroes/"+self.name+"/attack2", "frames": 3},
             "crouch": {"folder": "assets/heroes/"+self.name+"/crouch", "frames": 2},
@@ -207,18 +207,23 @@ class Character:
             self.reverse_animation = False
 
         if player2es:
-            self.rect_pos_RED = [WIDTH-self.fullhealth,680,self.fullhealth,20]
-            self.rect_pos_GREEN = [1280,680,-self.health,20]
-        else:
-            self.rect_pos_RED = [0,680,self.fullhealth,20]
-            self.rect_pos_GREEN = [0,680,self.health,20]
 
-        if player2es:
-            self.rect_pos_RAGE1 = [WIDTH-100*2,650,100*2,20]
-            self.rect_pos_RAGE2 = [1280,650,-self.rage,20] 
+            self.rect_pos_RED = pygame.Rect(WIDTH - self.fullhealth, 680, self.fullhealth, 20)
+            self.rect_pos_GREEN = pygame.Rect(WIDTH, 680, -self.health, 20) 
+            self.rect_pos_GREEN.normalize()
+            
+            self.rect_pos_RAGE1 = pygame.Rect(WIDTH - 100*2, 650, 100*2, 20)
+            self.rect_pos_RAGE2 = pygame.Rect(WIDTH, 650, -self.rage, 20)
+            self.rect_pos_RAGE2.normalize()
+
         else:
-            self.rect_pos_RAGE1 = [0,650,100*2,20]
-            self.rect_pos_RAGE2 = [0,650,self.rage,20]
+
+            self.rect_pos_RED = pygame.Rect(0, 680, self.fullhealth, 20)
+            self.rect_pos_GREEN = pygame.Rect(0, 680, self.health, 20)
+            
+            
+            self.rect_pos_RAGE1 = pygame.Rect(0, 650, 100*2, 20)
+            self.rect_pos_RAGE2 = pygame.Rect(0, 650, self.rage, 20)
 
         if gameplay:
         
@@ -699,14 +704,16 @@ while running:
         pygame.draw.rect(screen,(255,128,0),player1.rect_pos_RAGE1)
         pygame.draw.rect(screen,(255,128,0),player2.rect_pos_RAGE1)
 
-        if player1.rage != 200:
-            pygame.draw.rect(screen,(255,51,51),player1.rect_pos_RAGE2)
-        else:
-            pygame.draw.rect(screen,(255,0,127),player1.rect_pos_RAGE2)
         if player2.rage != 200:
             pygame.draw.rect(screen,(255,51,51),player2.rect_pos_RAGE2)
         else:
             pygame.draw.rect(screen,(255,0,127),player2.rect_pos_RAGE2)
+
+        if player1.rage != 200:
+            pygame.draw.rect(screen,(255,51,51),player1.rect_pos_RAGE2)
+        else:
+            pygame.draw.rect(screen,(255,0,127),player1.rect_pos_RAGE2)
+
 
         HP = font1.render('HP:'+str(player1.health)+'/'+str(player1.fullhealth),True,(0,100,0))
         screen.blit(HP,(5,682))
@@ -716,7 +723,7 @@ while running:
     else:
         if choose_menu:
             pygame.draw.rect(screen,(96,96,96),[0,0,WIDTH,HEIGHT])
-            pygame.draw.rect(screen,(50,50,50),[0,0,WIDTH,HEIGHT],15)
+            pygame.draw.rect(screen,(50,50,50),[0,0,WIDTH,HEIGHT],10)
             choose_a_hero = font1.render('choose a hero',True,(255,255,255))
             screen.blit(choose_a_hero,(570,680))
             items = os.listdir(folder_path)
@@ -737,7 +744,7 @@ while running:
                 background_card.update_surf((x_pos, y_pos, 250, 300))
 
                 line_card = RectDraw((50, 50, 50))
-                line_card.update_surf((x_pos, y_pos, 250, 300), 10)
+                line_card.update_surf((x_pos, y_pos, 250, 300), 5)
 
                 icon = IconDraw(hero_folder, x_pos + 10, y_pos + 10)
                 icon.update_surf()
@@ -761,7 +768,7 @@ while running:
                     row+=1
                     counter = 0
                 if row >= 3:
-                    items.remove(filedir)
+                    items.remove(hero_folder)
 
         
 
@@ -774,7 +781,6 @@ while running:
                     for icon in icons:
                         if icon.rect.collidepoint(event.pos):
                             selected_hero = icon.filedir
-                            print(f"Selected hero: {selected_hero}")
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_q:  
                         selected_hero = None
